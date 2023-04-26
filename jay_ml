@@ -1,0 +1,39 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.svm import SVC
+
+# Load the labeled datasets for each emotion
+anger_df = pd.read_csv('./j_data/anger-train.txt', delimiter='\t', header=None, names=['id', 'text', 'emotion', 'intensity'])
+anger_df = anger_df[['text', 'emotion']]
+fear_df = pd.read_csv('./j_data/fear-train.txt', delimiter='\t', header=None, names=['id', 'text', 'emotion', 'intensity'])
+fear_df = fear_df[['text', 'emotion']]
+joy_df = pd.read_csv('./j_data/joy-train.txt', delimiter='\t', header=None, names=['id', 'text', 'emotion', 'intensity'])
+joy_df = joy_df[['text', 'emotion']]
+sadness_df = pd.read_csv('./j_data/sadness-train.txt', delimiter='\t', header=None, names=['id', 'text', 'emotion', 'intensity'])
+sadness_df = sadness_df[['text', 'emotion']]
+
+# Concatenate the dataframes together
+df = pd.concat([anger_df, fear_df, joy_df, sadness_df])
+
+# Split the dataset into training and testing sets
+train_data = df.sample(frac=0.8, random_state=1)
+test_data = df.drop(train_data.index)
+
+# Vectorize the text data using TF-IDF
+vectorizer = TfidfVectorizer()
+train_features = vectorizer.fit_transform(train_data['text'])
+test_features = vectorizer.transform(test_data['text'])
+
+# Train the SVM classifier
+clf = SVC(kernel='linear')
+clf.fit(train_features, train_data['emotion'])
+
+# Test the SVM classifier
+accuracy = clf.score(test_features, test_data['emotion'])
+print('Accuracy:', accuracy)
+
+# Use the SVM classifier to predict emotions in new text data
+new_text = 'Im Jay'
+new_features = vectorizer.transform([new_text])
+prediction = clf.predict(new_features)
+print('Prediction:', prediction[0])

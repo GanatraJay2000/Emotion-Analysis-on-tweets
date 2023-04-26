@@ -25,9 +25,15 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
+
+# Define the emotion labels
+emotion_labels = ['anger', 'disgust', 'fear', 'joy', 'sadness', 'surprise']
+count_per_emotion = {'anger':0, 'disgust':0, 'fear':0, 'joy':0, 'sadness':0, 'surprise':0}
+
+
 # Define our search criteria
-query = "Mumbai Indians vs Chennai Super Kings"
-num_tweets = 100
+query = "premier league"
+num_tweets = 1000
 positive_tweets = 0
 negative_tweets = 0
 neutral_tweets = 0
@@ -60,27 +66,27 @@ def preprocess_tweet(tweet):
     return cleaned_tweet
 
 # Perform sentiment analysis on each tweet using TextBlob
-for tweet in tweets:
+for indTweet, tweet in enumerate(tweets):
     tweet_text = preprocess_tweet(tweet.text)
     blob = TextBlob(tweet_text)
-    polarity, subjectivity = blob.sentiment
-    print("Polarity:", polarity)  # polarity ranges from -1 (negative) to 1 (positive)
-    print("Subjectivity:", subjectivity)  # subjectivity ranges from 0 (objective) to 1 (subjective)
+    emotions = blob.sentiment
+    emotion_values = [(emotions.polarity + 1) / 2, emotions.subjectivity]
+    # print("Polarity:", polarity)  # polarity ranges from -1 (negative) to 1 (positive)
+    # print("Subjectivity:", subjectivity)  # subjectivity ranges from 0 (objective) to 1 (subjective)
+    emotion = max(emotion_values)
+    e_label = emotion_labels[emotion_values.index(emotion)]
+    count_per_emotion[e_label] += 1
+    print()
+    print(indTweet+1, ". ", tweet_text)
+    print("Emotion: ",e_label,": ", emotion)
     print("------------------------")
     print()
     print()
     print()
     print()
-    if polarity > 0:
-        positive_tweets +=1
-    elif polarity < 0:
-        negative_tweets +=1
-    else:
-        neutral_tweets +=1
 
-
-labels = ['Positive', 'Negative', 'Neutral']
-sizes = [positive_tweets, negative_tweets, neutral_tweets]
+labels = ['Anger', 'Disgust', 'Fear', 'Joy', 'Sadness', 'Surprise']
+sizes = [count_per_emotion['anger'], count_per_emotion['disgust'], count_per_emotion['fear'], count_per_emotion['joy'], count_per_emotion['sadness'], count_per_emotion['surprise']]
 plt.bar(labels, sizes)
 
 # add title and labels
